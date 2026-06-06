@@ -1,0 +1,233 @@
+{% extends 'stocks/base.html' %}
+{% block content %}
+
+<style>
+.trade-bg {
+  position: fixed;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 80px);
+  background: url("https://media.istockphoto.com/id/1916501163/photo/financial-data-for-trading-and-business-investment-stock-market-with-candlestick-on.webp?b=1&s=612x612&w=0&k=20&c=W7m9MhFsEYLeCid18Q_a_EK7k0XUeaCyX9NRa3A5lts=")
+              no-repeat center center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 56px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.trade-card {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  background: radial-gradient(circle at top left, rgba(104, 211, 255, 0.12), transparent 55%),
+              radial-gradient(circle at bottom right, rgba(255, 129, 174, 0.12), transparent 55%),
+              rgba(10, 12, 18, 0.88);
+  border-radius: 20px;
+  padding: 26px 26px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+  color: #e8f2fb;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.trade-card h2 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.03em;
+}
+
+.trade-meta {
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba(210, 224, 241, 0.86);
+}
+
+.price-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(41, 196, 140, 0.16), rgba(0, 0, 0, 0.65));
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  font-size: 15px;
+}
+
+.price-chip span.value {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.trade-form {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.trade-form label {
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(198, 212, 231, 0.9);
+  margin-bottom: 4px;
+}
+
+.trade-form input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 9, 15, 0.95);
+  color: #f4fbff;
+  font-size: 15px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.trade-form input[type="number"]:focus {
+  border-color: rgba(76, 175, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(76, 175, 255, 0.2);
+}
+
+.trade-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.trade-btn {
+  flex: 1;
+  padding: 11px 0;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.trade-btn.buy {
+  background: linear-gradient(135deg, #29c97c, #0c9b57);
+  color: #f4fffb;
+}
+
+.trade-btn.sell {
+  background: linear-gradient(135deg, #ff6b81, #e1415f);
+  color: #fff5f7;
+}
+
+.trade-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+  opacity: 0.98;
+}
+
+.trade-footer {
+  margin-top: 18px;
+  font-size: 13px;
+  color: rgba(189, 205, 226, 0.85);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.trade-footer a {
+  color: #7cb8ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.trade-footer a:hover {
+  text-decoration: underline;
+}
+
+.error-msg {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #ffb3c0;
+}
+
+.confirm-box {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(7, 10, 15, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+}
+
+.confirm-box strong {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .trade-card {
+    padding: 20px 18px;
+  }
+}
+</style>
+
+<div class="trade-bg">
+  <div class="trade-card">
+    <h2>Trade {{ stock.ticker }}</h2>
+    <div class="trade-meta">
+      Simulated buy & sell experience. No real trades are executed.
+    </div>
+
+    {% if current_price %}
+      <div class="price-chip">
+        <span>Current price</span>
+        <span class="value">₹{{ current_price|floatformat:2 }}</span>
+      </div>
+    {% else %}
+      <div class="price-chip">
+        <span class="value">No price data yet for this stock.</span>
+      </div>
+    {% endif %}
+
+    <form method="post" class="trade-form">
+      {% csrf_token %}
+      <div>
+        <label for="quantity">Quantity</label>
+        <input id="quantity" name="quantity" type="number" min="1" placeholder="Enter number of shares" required>
+      </div>
+
+      <div class="trade-actions">
+        <button type="submit" name="action" value="buy" class="trade-btn buy">Buy</button>
+        <button type="submit" name="action" value="sell" class="trade-btn sell">Sell</button>
+      </div>
+    </form>
+
+    {% if error %}
+      <div class="error-msg">{{ error }}</div>
+    {% endif %}
+
+    {% if action and quantity and total_value %}
+      <div class="confirm-box">
+        You chose to <strong>{{ action|upper }}</strong> <strong>{{ quantity }}</strong> shares of
+        <strong>{{ stock.ticker }}</strong> at an approximate price of
+        <strong>₹{{ current_price|floatformat:2 }}</strong> each
+        (total ~ <strong>₹{{ total_value|floatformat:2 }}</strong>).
+      </div>
+    {% endif %}
+
+    <div class="trade-footer">
+      <span>This is a demo-only interface for your AI-powered watchlist project.</span>
+      <span><a href="{% url 'ticker_detail' stock.ticker %}">← Back to {{ stock.ticker }} details</a></span>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

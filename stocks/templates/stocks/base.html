@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <title>Grow — StockProj</title>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0d0f12;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    /* DARK NAVBAR */
+    header {
+      background: #0d0f12;
+      padding: 18px 40px;
+      border-bottom: 1px solid #1c1f26;
+    }
+
+    .header-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Left side of navbar */
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .header-left h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #ffffff;
+    }
+
+    .subtext {
+      color: #9ea4ac;
+      font-size: 13px;
+    }
+
+    /* Right side (buttons) */
+    .header-right a {
+      background: #1a1d22;
+      color: #ffffff;
+      padding: 8px 14px;
+      margin-left: 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.15s;
+    }
+
+    .header-right a:hover {
+      background: #23272f;
+    }
+
+    /* Main container */
+    .container {
+      padding: 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+      min-height: 80vh;
+    }
+
+    /* Card dark style */
+    .card {
+      background: #111418;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background: #1f6feb;
+      color: white !important;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: #1658c5;
+    }
+
+    .muted {
+      color: #a9b0b8;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- BLACK NAVBAR -->
+  <header>
+    <div class="header-container">
+
+      <!-- Left Side -->
+      <div class="header-left">
+        <h1>GROWW MORE</h1>
+        <div class="subtext">AI-powered watchlists & predictions</div>
+      </div>
+
+      <!-- Right Side -->
+      <div class="header-right">
+        {% if user.is_authenticated %}
+            Hello, {{ user.username }}
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'portfolio' %}">Portfolio</a>
+            <a href="{% url 'history' %}">History</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'signup' %}">Sign up</a>
+        {% endif %}
+      </div>
+
+    </div>
+  </header>
+
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+
+</body>
+</html>

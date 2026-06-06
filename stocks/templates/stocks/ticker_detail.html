@@ -1,0 +1,423 @@
+{% extends 'stocks/base.html' %}
+{% block content %}
+
+<!-- Plotly -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+function getCSRFToken() {
+    return document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken'))
+        ?.split('=')[1];
+}
+</script>
+
+<style>
+/* ================================
+   FULLSCREEN BACKGROUND (user file)
+   ================================ */
+.detail-bg {
+  position: fixed;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 80px);
+
+  /* use user's uploaded background file (developer-provided local path) */
+  background: url('/mnt/data/17006133-33ec-451e-80d8-2d3cf32bb0c1.png') center/cover no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 56px 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* dark blur overlay for premium black feel */
+.detail-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(4,6,8,0.70);
+  backdrop-filter: blur(22px) saturate(120%);
+  -webkit-backdrop-filter: blur(22px) saturate(120%);
+  z-index: 0;
+}
+
+/* ================================
+   CENTERED CARD — Deep Black Glass
+   ================================ */
+.detail-card {
+  position: relative;
+  z-index: 2;
+  width: 960px;
+  max-width: calc(100% - 40px);
+  padding: 28px;
+  border-radius: 18px;
+
+  /* layered dark glass */
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008)),
+    rgba(8,10,12,0.60);
+
+  border: 1px solid rgba(255,255,255,0.04);
+
+  /* subtle inner glow + deep shadow */
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.65),
+    0 2px 12px rgba(50,80,120,0.03) inset;
+
+  backdrop-filter: blur(20px) saturate(110%);
+  -webkit-backdrop-filter: blur(20px) saturate(110%);
+
+  color: #e8f2fb;
+}
+
+/* polished rounded highlight (edge) */
+.detail-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.00));
+  mix-blend-mode: overlay;
+  opacity: 0.85;
+}
+
+/* ================================
+   HEADER (title + meta)
+   ================================ */
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detail-head h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: #dceffd;
+}
+
+.meta {
+  color: rgba(210,225,245,0.78);
+  font-size: 14px;
+}
+
+/* ================================
+   CHART AREA — dark glass panel
+   ================================ */
+#chart {
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Plotly traces text color fallback */
+.plotly .legendtext, .plotly .gtitle, .plotly .xaxislayer, .plotly .yaxislayer {
+  color: rgba(220,240,255,0.9) !important;
+}
+
+/* ================================
+   CONTROLS — minimal dark buttons
+   ================================ */
+.controls {
+  display:flex;
+  gap:12px;
+  margin-top:14px;
+  align-items:center;
+}
+
+/* minimal premium buttons (dark) */
+.btn {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  color: #e8f7ff;
+  padding: 10px 16px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.7); }
+
+.btn.ghost {
+  background: transparent;
+  color: rgba(215,235,255,0.92);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* make buttons less contrast (user requested fewer bright contrasts) */
+.btn.small {
+  padding: 8px 12px;
+  font-weight:600;
+  border-radius:10px;
+  font-size:14px;
+}
+
+/* ================================
+   PREDICTION OUTPUT — dark chips
+   ================================ */
+#prediction-output {
+  margin-top:18px;
+  padding: 14px;
+  border-radius: 12px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.pred-pill {
+  background: rgba(255,255,255,0.02);
+  color: #e6f7ff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.04);
+  font-weight:700;
+}
+
+/* small responsive tweaks */
+@media (max-width: 980px) {
+  .detail-card { width: calc(100% - 30px); padding:20px; }
+  #chart { height: 420px !important; }
+  .detail-head { flex-direction: column; align-items: flex-start; gap:6px; }
+}
+</style>
+
+
+<div class="detail-bg">
+  <div class="detail-card">
+
+    <div class="detail-head">
+      <h2>{{ stock.ticker }}</h2>
+      <div class="meta">
+        Recommendation: <strong>{{ rec }}</strong> &nbsp; • &nbsp;
+        Expected return: <strong>{{ expected_return|floatformat:4 }}</strong> &nbsp; • &nbsp;
+        Predicted CAGR: <strong>{{ cagr|floatformat:4 }}</strong>
+      </div>
+      <div class="controls" style="margin-top:0;">
+        <a href="{% url 'trade_stock' ticker=stock.ticker %}" class="btn small">Trade {{ stock.ticker }}</a>
+      </div>
+    </div>
+    </div>
+
+    <div id="chart" style="height:520px;"></div>
+
+<script>
+    // parse server-provided data
+    let prices = JSON.parse('{{ prices|escapejs }}');
+    let preds = JSON.parse('{{ preds|escapejs }}');
+
+    // reusable chart update (uses Plotly.react for fast redraws)
+    function updateChart(pricesData, predsData) {
+        const actual_x = pricesData.map(p => new Date(p.date));
+        const actual_y = pricesData.map(p => Number(p.close));
+
+        const pred_x = Object.keys(predsData || {}).map(d => new Date(d));
+        const pred_y = Object.values(predsData || {}).map(v => Number(v));
+
+        const traces = [
+            {
+              x: actual_x,
+              y: actual_y,
+              type: 'scatter',
+              mode: 'lines+markers',
+              name: 'Actual',
+              line:{ width:2, color:'#3aa0d6' },
+              marker:{ size:4, color:'#2b90c6' }
+            }
+        ];
+
+        if (pred_x.length) {
+          traces.push({
+            x: pred_x,
+            y: pred_y,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Predicted',
+            line: { dash: 'dashdot', width:2, color:'#ff9f43' },
+            marker:{ size:4, color:'#ff9f43' }
+          });
+        }
+
+        const layout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            title: { text: `{{ stock.ticker }} — Actual vs Predicted`, font:{color:'#dff7ff'}},
+            xaxis: {
+              title:'Date',
+              tickfont:{color:'#cfefff'},
+              titlefont:{color:'#bcdff0'},
+              gridcolor: 'rgba(255,255,255,0.06)'
+            },
+            yaxis: {
+              title:'Price (INR)',
+              tickfont:{color:'#cfefff'},
+              titlefont:{color:'#bcdff0'},
+              gridcolor: 'rgba(255,255,255,0.06)'
+            },
+            legend:{font:{color:'#d0f0ff'}},
+            margin: {t:56, r:28, b:56, l:64},
+            hovermode: 'closest'
+        };
+
+        Plotly.react('chart', traces, layout, {responsive:true});
+    }
+
+    // initial chart render
+    updateChart(prices, preds);
+</script>
+
+    <div id="status-msg" style="margin-top:12px; font-weight:700; color:rgba(220,240,255,0.85)"></div>
+
+    <div class="controls">
+      <button id="import-btn" class="btn small" style="display:none;" onclick="importPrices()">Import Prices</button>
+      <button id="train-btn" class="btn small ghost" style="display:none;" onclick="trainNow()">Train Model</button>
+      <button id="predict-btn" class="btn small" style="display:none;" onclick="predictNow()">Predict Next 7 Days</button>
+    </div>
+
+    <div id="prediction-output" aria-live="polite" role="status">
+      {% if preds %}
+        <div class="pred-pill">Recommendation: <strong>{{ rec }}</strong></div>
+        <div class="pred-pill">Expected return: <strong>{{ expected_return|floatformat:4 }}</strong></div>
+        <div class="pred-pill">CAGR: <strong>{{ cagr|floatformat:4 }}</strong></div>
+      {% else %}
+        <div class="pred-pill">No predictions yet</div>
+      {% endif %}
+    </div>
+
+<script>
+    const ticker = encodeURIComponent("{{ stock.ticker }}");
+    const hasData = Array.isArray(prices) && prices.length > 0;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (!hasData) {
+            document.getElementById("status-msg").innerText = "No data found — import required.";
+            document.getElementById("import-btn").style.display = "inline-block";
+        } else {
+            document.getElementById("train-btn").style.display = "inline-block";
+            document.getElementById("predict-btn").style.display = "inline-block";
+        }
+    });
+
+    // fetch latest prices endpoint - adapt this URL to your backend if different
+    function fetchLatestPrices() {
+        return fetch(`/api/prices/${ticker}/`)
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to fetch prices");
+                return res.json();
+            })
+            .then(obj => obj.prices)
+            .catch(() => prices); // fallback to existing prices variable
+    }
+
+    // IMPORT: calls backend, then updates chart instantly with new actual prices
+    function importPrices() {
+        document.getElementById("status-msg").innerText = "Importing price data…";
+
+        fetch(`/api/import/${ticker}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCSRFToken() }
+        })
+        .then(res => res.json())
+        .then(async data => {
+            if (data.error) {
+                document.getElementById("status-msg").innerText = "Import failed: " + data.error;
+                return;
+            }
+
+            // get latest prices (server should return saved prices)
+            const updatedPrices = await fetchLatestPrices();
+            if (Array.isArray(updatedPrices) && updatedPrices.length) {
+                prices = updatedPrices;
+                preds = {}; // predictions reset
+                updateChart(prices, preds);
+                document.getElementById("prediction-output").innerHTML = `<div class="pred-pill">Prices imported</div>`;
+            }
+
+            // start training automatically (optional)
+            document.getElementById("status-msg").innerText = "Training model…";
+            trainNow();
+        })
+        .catch(err => {
+            document.getElementById("status-msg").innerText = "Import error: " + err.message;
+        });
+    }
+
+    // TRAIN: triggers backend training; after train, call predict to show predictions
+    function trainNow() {
+        fetch(`/api/train/${ticker}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCSRFToken() }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById("status-msg").innerText = "Training failed: " + data.error;
+                return;
+            }
+            // Immediately request predictions and show them
+            predictNow();
+        })
+        .catch(err => {
+            document.getElementById("status-msg").innerText = "Training error: " + err.message;
+        });
+    }
+
+    // PREDICT: fetch predictions and update chart + UI instantly
+    function predictNow() {
+        // intentionally do NOT show a "Generating predictions..." message.
+        fetch(`/api/predict/${ticker}/`)
+        .then(res => res.json())
+        .then(async data => {
+            if (data.error) {
+                document.getElementById("status-msg").innerText = "Prediction failed: " + data.error;
+                return;
+            }
+
+            // Ensure we have latest actuals
+            const latestPrices = await fetchLatestPrices();
+            if (Array.isArray(latestPrices) && latestPrices.length) {
+                prices = latestPrices;
+            }
+
+            // update preds and redraw chart immediately
+            preds = data.predictions ?? {};
+            updateChart(prices, preds);
+
+            // show predictions summary (no intermediate generating text)
+            document.getElementById("prediction-output").innerHTML = `
+                <div class="pred-pill"><strong>Recommendation:</strong> ${data.recommendation}</div>
+                <div class="pred-pill"><strong>Expected return:</strong> ${(data.expected_return*100).toFixed(2)}%</div>
+                <div class="pred-pill"><strong>CAGR:</strong> ${(data.cagr*100).toFixed(2)}%</div>
+            `;
+
+            // clear any transient status
+            document.getElementById("status-msg").innerText = "";
+        })
+        .catch(err => {
+            document.getElementById("status-msg").innerText = "Prediction error: " + err.message;
+        });
+    }
+</script>
+
+  </div>
+</div>
+
+{% endblock %}

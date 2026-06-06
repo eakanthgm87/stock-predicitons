@@ -1,0 +1,110 @@
+{% extends 'stocks/base.html' %}
+{% block content %}
+
+<style>
+
+/* FULLPAGE BACKGROUND BELOW NAVBAR */
+.signup-screen {
+    position: fixed;
+    top: 80px; /* navbar height */
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 80px);
+    background: url("https://media.istockphoto.com/id/1846625096/photo/gold-candlestick-financial-stock-investment-exchange-business-market-money-finance-indicator.webp?a=1&b=1&s=612x612&w=0&k=20&c=26ZyAQKDCPpuQKQx_E9yvd8CDP2GHdPc7ntXxcpEXXw=")
+                no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* DARK GLASS OVERLAY */
+.signup-screen::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 5, 5, 0.85);
+    backdrop-filter: blur(8px);
+}
+
+/* SIGN-UP CARD */
+.signup-box {
+    position: relative;
+    z-index: 2;
+    width: 440px;
+    padding: 40px;
+    border-radius: 18px;
+    background: rgba(20,20,20,0.45);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.55);
+    text-align: center;
+}
+
+/* TITLE */
+.signup-box h2 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: white;
+}
+
+/* LABELS RENDERED BY DJANGO */
+.signup-box label {
+    color: #e5e5e5 !important;
+    font-size: 14px;
+}
+
+/* DJANGO FORM INPUTS */
+.signup-box input, 
+.signup-box select {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 25px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.12);
+    color: white;
+    outline: none;
+}
+
+.signup-box input::placeholder {
+    color: #cfcfcf;
+}
+
+/* SIGN-UP BUTTON */
+.signup-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 25px;
+    background: #ff5f73;
+    color: white;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+    margin-top: 10px;
+}
+
+.signup-btn:hover {
+    background: #ff3d54;
+}
+
+</style>
+
+
+<div class="signup-screen">
+
+    <div class="signup-box">
+        <h2>Sign up</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="signup-btn">Sign up</button>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}

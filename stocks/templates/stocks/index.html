@@ -1,0 +1,92 @@
+{% extends "stocks/base.html" %}
+{% block content %}
+
+<style>
+
+/* FULL SCREEN BACKGROUND BELOW NAVBAR */
+.home-screen {
+    position: fixed;
+    top: 80px;      /* navbar height */
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 80px);
+    background: url("https://tse4.mm.bing.net/th/id/OIP._utBT8RPrDZsqAThxsjDYwHaFv?rs=1&pid=ImgDetMain&o=7&rm=3")
+                no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* DARK OVERLAY ON TOP */
+.home-screen::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(5,5,5,0.80);
+    backdrop-filter: blur(6px);
+}
+
+/* GLASS CARD */
+.home-card {
+    position: relative;
+    z-index: 2;
+    width: 520px;
+    padding: 40px;
+    border-radius: 18px;
+    background: rgba(20,20,20,0.45);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.55);
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.07);
+}
+
+/* TITLE */
+.home-card h2 {
+    color: white;
+    font-size: 28px;
+    margin-bottom: 18px;
+    font-weight: 600;
+}
+
+/* TEXT */
+.home-card p {
+    color: #d0d0d0;
+    margin-bottom: 28px;
+    font-size: 15px;
+}
+
+/* BUTTON STYLE TO MATCH LOGIN STYLE */
+.home-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 15px;
+    color: white;
+    text-decoration: none;
+    background: #ff5f73;
+    transition: 0.25s;
+}
+
+.home-btn:hover {
+    background: #ff3b54;
+}
+
+</style>
+
+<!-- FULLSCREEN BACKGROUND -->
+<div class="home-screen">
+
+    <!-- GLASS CARD -->
+    <div class="home-card">
+        <h2>Welcome to GROWW MORE</h2>
+        <p>Personal stock watchlists, AI predictions, and profit/loss dashboard.</p>
+
+        <a href="{% url 'signup' %}" class="home-btn">Create account</a>
+        <a href="{% url 'login' %}" class="home-btn">Login</a>
+    </div>
+
+</div>
+
+{% endblock %}

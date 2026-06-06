@@ -1,0 +1,290 @@
+{% extends 'stocks/base.html' %}
+{% block content %}
+
+<style>
+/* BACKGROUND SAME AS LOGIN */
+.portfolio-screen {
+    position: relative;
+    top: 80px;
+    width: 100%;
+    min-height: 100vh;
+    background: url("https://media.istockphoto.com/id/1916501163/photo/financial-data-for-trading-and-stock-market-monitoring.jpg?s=612x612&w=0&k=20&c=W7m9MhFsEYLeCid18Q_a_EK7k0XUeaCyX9NRa3A5lts=")
+                no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 56px 20px;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.portfolio-screen::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 5, 5, 0.85);
+    backdrop-filter: blur(10px);
+}
+
+/* MAIN CARD */
+.portfolio-card {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 960px;
+    padding: 26px 26px 20px;
+    background: rgba(20, 20, 20, 0.65);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.75);
+    color: #e9f3ff;
+}
+
+.portfolio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.portfolio-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.portfolio-summary {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+    font-size: 14px;
+}
+
+.summary-pill {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.summary-pill strong {
+    font-size: 15px;
+}
+
+/* TABLE */
+.portfolio-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.portfolio-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.portfolio-table th,
+.portfolio-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.portfolio-table th {
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #aeb8c7;
+}
+
+.portfolio-table tr:last-child td {
+    border-bottom: none;
+}
+
+.pnl-positive {
+    color: #2ecc71;
+    font-weight: 600;
+}
+
+.pnl-negative {
+    color: #ff6b81;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .portfolio-card {
+        padding: 18px 16px;
+    }
+}
+</style>
+
+<div class="portfolio-screen">
+  <div class="portfolio-card">
+    <div class="portfolio-header">
+      <h2>Your Portfolio</h2>
+      <div style="font-size:13px; color:#b7c2d4;">Live snapshot based on latest stored prices.</div>
+    </div>
+
+    <div class="portfolio-summary">
+      <div class="summary-pill">
+        Total value:&nbsp;
+        <strong>
+          {% if total_value %}
+            ₹{{ total_value|floatformat:2 }}
+          {% else %}
+            ₹0.00
+          {% endif %}
+        </strong>
+      </div>
+      <div class="summary-pill">
+        Total P&amp;L:&nbsp;
+        {% if total_pnl %}
+          {% if total_pnl >= 0 %}
+            <strong class="pnl-positive">
+              ₹{{ total_pnl|floatformat:2 }}
+            </strong>
+          {% else %}
+            <strong class="pnl-negative">
+              ₹{{ total_pnl|floatformat:2 }}
+            </strong>
+          {% endif %}
+        {% else %}
+          <strong>₹0.00</strong>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="portfolio-table-wrapper">
+      <table class="portfolio-table">
+        <thead>
+          <tr>
+            <th>Stock</th>
+            <th>Quantity</th>
+            <th>Avg Buy Price</th>
+            <th>Current Price</th>
+            <th>Value</th>
+            <th>P&amp;L</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if rows %}
+          {% for row in rows %}
+            <tr>
+              <td>{{ row.holding.stock.ticker }}</td>
+              <td>{{ row.holding.quantity }}</td>
+              <td>
+                {% if row.avg_buy_price %}
+                  ₹{{ row.avg_buy_price|floatformat:2 }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if row.current_price %}
+                  ₹{{ row.current_price|floatformat:2 }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if row.value %}
+                  ₹{{ row.value|floatformat:2 }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if row.pnl %}
+                  {% if row.pnl >= 0 %}
+                    <span class="pnl-positive">
+                      ₹{{ row.pnl|floatformat:2 }}
+                    </span>
+                  {% else %}
+                    <span class="pnl-negative">
+                      ₹{{ row.pnl|floatformat:2 }}
+                    </span>
+                  {% endif %}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" style="padding-top:14px; color:#b3bdcc;">
+              You don't have any holdings yet. Try buying from the Trade screen.
+            </td>
+          </tr>
+        {% endif %}
+        </tbody>
+      
+    </tbody>
+  </table>
+</div>
+
+<!-- Charts: Equity Curve & Allocation -->
+<div class="summary-row" style="margin-top:20px; flex-wrap: wrap;">
+  <div class="summary-pill">
+    AI Portfolio Suggestion: <strong>{{ portfolio_suggestion }}</strong>
+  </div>
+</div>
+
+<div style="margin-top:24px;">
+  <div style="margin-bottom:18px;">
+    <div style="font-size:14px; color:#b3bdcc; margin-bottom:6px;">Portfolio Equity Curve</div>
+    <div id="equity-chart" style="width:100%; height:260px;"></div>
+  </div>
+  <div>
+    <div style="font-size:14px; color:#b3bdcc; margin-bottom:6px;">Allocation Breakdown</div>
+    <div id="alloc-chart" style="width:100%; height:260px;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+  (function() {
+    const equityLabels = JSON.parse('{{ equity_labels|escapejs }}' || '[]');
+    const equityValues = JSON.parse('{{ equity_values|escapejs }}' || '[]');
+    const allocLabels = JSON.parse('{{ alloc_labels|escapejs }}' || '[]');
+    const allocValues = JSON.parse('{{ alloc_values|escapejs }}' || '[]');
+
+    if (equityLabels.length && equityValues.length) {
+      Plotly.newPlot('equity-chart', [{
+        x: equityLabels,
+        y: equityValues,
+        mode: 'lines',
+        line: { shape: 'spline' }
+      }], {
+        margin: {l: 40, r: 10, t: 10, b: 40},
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        xaxis: {showgrid: false},
+        yaxis: {showgrid: false}
+      }, {responsive: true});
+    }
+
+    if (allocLabels.length && allocValues.length) {
+      Plotly.newPlot('alloc-chart', [{
+        labels: allocLabels,
+        values: allocValues,
+        type: 'pie',
+        hole: 0.4
+      }], {
+        margin: {l: 0, r: 0, t: 10, b: 10},
+        paper_bgcolor: 'rgba(0,0,0,0)',
+      }, {responsive: true});
+    }
+  })();
+</script>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

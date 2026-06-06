@@ -1,0 +1,191 @@
+{% extends 'stocks/base.html' %}
+{% block content %}
+
+<style>
+/* BACKGROUND SAME AS LOGIN */
+.history-screen {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 80px);
+    background: url("https://media.istockphoto.com/id/1916501163...12x612&w=0&k=20&c=W7m9MhFsEYLeCid18Q_a_EK7k0XUeaCyX9NRa3A5lts=")
+                no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 56px 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+/* GLASS CARD */
+.history-card {
+    position: relative;
+    width: 100%;
+    max-width: 950px;
+    background: radial-gradient(circle at top left, rgba(104, 211, 255, 0.12), transparent 55%),
+                radial-gradient(circle at bottom right, rgba(255, 129, 174, 0.12), transparent 55%),
+                rgba(10, 12, 18, 0.88);
+    border-radius: 20px;
+    padding: 24px 24px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+    color: #e8f2fb;
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+}
+
+/* Title row */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.history-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.history-sub {
+    font-size: 13px;
+    color: #a7b3c5;
+}
+
+/* Table */
+.history-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.history-table thead tr {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+}
+
+.history-table thead th {
+    text-align: left;
+    padding: 10px 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #aeb7c6;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.history-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.history-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.history-table tbody td {
+    padding: 8px 10px;
+    color: #dde7f4;
+}
+
+.badge-buy {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(46, 204, 113, 0.12);
+    color: #2ecc71;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-sell {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255, 107, 129, 0.12);
+    color: #ff6b81;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.faded {
+    color: #9aa4b5;
+    font-size: 13px;
+}
+
+.empty-row {
+    padding-top: 14px;
+    color: #b3bdcc;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .history-card {
+        padding: 18px 16px;
+    }
+}
+</style>
+
+<div class="history-screen">
+  <div class="history-card">
+    <div class="history-header">
+      <div>
+        <div class="history-title">Trade History</div>
+        <div class="history-sub">Your complete log of BUY and SELL actions.</div>
+      </div>
+    </div>
+
+    <div class="history-table-wrapper">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Stock</th>
+            <th>Action</th>
+            <th>Qty</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if tx %}
+          {% for t in tx %}
+          <tr>
+            <td class="faded">{{ t.timestamp|date:"Y-m-d H:i" }}</td>
+            <td>{{ t.stock.ticker }}</td>
+            <td>
+              {% if t.action == "BUY" %}
+                <span class="badge-buy">BUY</span>
+              {% else %}
+                <span class="badge-sell">SELL</span>
+              {% endif %}
+            </td>
+            <td>{{ t.quantity }}</td>
+            <td>₹{{ t.price|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5" class="empty-row">
+              No transactions yet. Use the Trade screen to place your first BUY or SELL.
+            </td>
+          </tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
